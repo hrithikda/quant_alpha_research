@@ -69,17 +69,17 @@ The **Quantitative Alpha Research Platform** is an interactive tool for conducti
    git clone https://github.com/your-username/QuantAlphaResearchPlatform.git
    cd QuantAlphaResearchPlatform
    
-Install Dependencies: Ensure you have Python installed, then run:
+  Install Dependencies: Ensure you have Python installed, then run:
 
-```bash
+  ```bash
   pip install -r requirements.txt
-```
+  ```
 
-Run the Application:
+  Run the Application:
 
-```bash
+  ```bash
   streamlit run main.py
-```
+  ```
 The dashboard will open in your default web browser.
 
 Usage Instructions
