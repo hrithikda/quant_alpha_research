@@ -25,14 +25,18 @@ def calculate_indicators(df):
         raise ValueError("Not enough data points to calculate indicators. Please provide more historical data.")
     
     # Relative Strength Index (RSI)
-    delta = df['Close'].diff()
-    gain = np.where(delta > 0, delta, 0)
-    loss = np.where(delta < 0, -delta, 0)
+    delta = df['Close'].diff().fillna(0)  # Replace NaNs with 0 to avoid rolling issues
+    gain = np.where(delta > 0, delta, 0)  # Positive differences (gains)
+    loss = np.where(delta < 0, -delta, 0)  # Negative differences (losses)
 
-    # Convert to series and handle NaNs
-    avg_gain = pd.Series(gain).fillna(0).rolling(window=14, min_periods=1).mean()
-    avg_loss = pd.Series(loss).fillna(0).rolling(window=14, min_periods=1).mean()
+    # Ensure 1D arrays and convert to Pandas Series
+    gain = pd.Series(gain, index=df.index)
+    loss = pd.Series(loss, index=df.index)
 
+    avg_gain = gain.rolling(window=14, min_periods=1).mean()  # 14-period rolling average
+    avg_loss = loss.rolling(window=14, min_periods=1).mean()
+
+    # Compute RSI
     rs = avg_gain / avg_loss
     df['RSI'] = 100 - (100 / (1 + rs))
 
@@ -49,7 +53,7 @@ def calculate_indicators(df):
     # Lagged Returns
     df['Lagged_Returns'] = df['Returns'].shift(1)
 
-    # Drop NaN values after calculations
+    # Drop any remaining NaN values after calculations
     df.dropna(inplace=True)
     return df
 
@@ -129,4 +133,5 @@ def run_dashboard():
 
 if __name__ == "__main__":
     run_dashboard()
+
 
