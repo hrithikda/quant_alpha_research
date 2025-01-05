@@ -1,4 +1,4 @@
-# Importing necessary libraries
+# Import necessary libraries
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -21,12 +21,18 @@ data = fetch_stock_data('AAPL', '2015-01-01', '2023-01-01')
 
 # Step 2: Feature Engineering - Adding technical indicators
 def calculate_indicators(df):
+    if len(df) < 20:
+        raise ValueError("Not enough data points to calculate indicators. Please provide more historical data.")
+    
     # Relative Strength Index (RSI)
     delta = df['Close'].diff()
     gain = np.where(delta > 0, delta, 0)
     loss = np.where(delta < 0, -delta, 0)
-    avg_gain = pd.Series(gain).rolling(window=14).mean()
-    avg_loss = pd.Series(loss).rolling(window=14).mean()
+
+    # Convert to series and handle NaNs
+    avg_gain = pd.Series(gain).fillna(0).rolling(window=14, min_periods=1).mean()
+    avg_loss = pd.Series(loss).fillna(0).rolling(window=14, min_periods=1).mean()
+
     rs = avg_gain / avg_loss
     df['RSI'] = 100 - (100 / (1 + rs))
 
@@ -36,14 +42,14 @@ def calculate_indicators(df):
     df['MACD'] = df['EMA_12'] - df['EMA_26']
 
     # Bollinger Bands
-    df['Rolling_Mean'] = df['Close'].rolling(window=20).mean()
-    df['Bollinger_Upper'] = df['Rolling_Mean'] + 2 * df['Close'].rolling(window=20).std()
-    df['Bollinger_Lower'] = df['Rolling_Mean'] - 2 * df['Close'].rolling(window=20).std()
+    df['Rolling_Mean'] = df['Close'].rolling(window=20, min_periods=1).mean()
+    df['Bollinger_Upper'] = df['Rolling_Mean'] + 2 * df['Close'].rolling(window=20, min_periods=1).std()
+    df['Bollinger_Lower'] = df['Rolling_Mean'] - 2 * df['Close'].rolling(window=20, min_periods=1).std()
 
     # Lagged Returns
     df['Lagged_Returns'] = df['Returns'].shift(1)
 
-    # Clean up NaNs from calculations
+    # Drop NaN values after calculations
     df.dropna(inplace=True)
     return df
 
@@ -85,13 +91,14 @@ class MLBacktestStrategy(bt.Strategy):
         self.model = best_rf
 
     def next(self):
+        # Prepare the current data as a feature set for prediction
         current_data = pd.Series({
-            'RSI': self.data.close[0],  # Assume most recent features
-            'MACD': self.data.close[0] - self.data.close[-12],
-            'Lagged_Returns': self.data.close[-1] / self.data.close[-2],
-            'Rolling_Mean': self.data.close[-10:].mean(),
-            'Bollinger_Upper': self.data.close[-1] + 2 * self.data.close[-1:].std(),
-            'Bollinger_Lower': self.data.close[-1] - 2 * self.data.close[-1:].std()
+            'RSI': self.dataclose[-1],  # Assume most recent price is equivalent for RSI in simplified backtest
+            'MACD': self.dataclose[-1] - self.dataclose[-12],
+            'Lagged_Returns': self.dataclose[-1] / self.dataclose[-2],
+            'Rolling_Mean': self.dataclose[-10:].mean(),
+            'Bollinger_Upper': self.dataclose[-1] + 2 * self.dataclose[-10:].std(),
+            'Bollinger_Lower': self.dataclose[-1] - 2 * self.dataclose[-10:].std()
         })
 
         signal = self.model.predict([current_data])[0]
@@ -122,3 +129,4 @@ def run_dashboard():
 
 if __name__ == "__main__":
     run_dashboard()
+
