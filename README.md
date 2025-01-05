@@ -54,12 +54,13 @@ The **Quantitative Alpha Research Platform** is an interactive tool for conducti
 
 ## Project Structure
 
-quant_alpha_research/ ├── main.py # Main Python script ├── README.md # Project description and instructions ├── requirements.txt # List of dependencies └── .gitignore # Files to exclude from GitHub
-
-yaml
-Copy code
-
----
+```
+quant_alpha_research/
+├── main.py           # Main Python script
+├── README.md         # Project description and instructions
+├── requirements.txt  # List of dependencies
+└── .gitignore        # Files to exclude from GitHub
+```
 
 ## Installation Guide
 
@@ -67,17 +68,19 @@ Copy code
    ```bash
    git clone https://github.com/your-username/QuantAlphaResearchPlatform.git
    cd QuantAlphaResearchPlatform
+   
 Install Dependencies: Ensure you have Python installed, then run:
 
-bash
-
+```bash
   pip install -r requirements.txt
+```
 
 Run the Application:
 
-bash
+```bash
 Copy code
 streamlit run main.py
+```
 The dashboard will open in your default web browser.
 
 Usage Instructions
