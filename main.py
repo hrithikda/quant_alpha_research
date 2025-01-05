@@ -16,9 +16,6 @@ def fetch_stock_data(ticker, start_date, end_date):
     stock_data.dropna(inplace=True)
     return stock_data
 
-# Load data for AAPL stock
-data = fetch_stock_data('AAPL', '2015-01-01', '2023-01-01')
-
 # Step 2: Feature Engineering - Adding technical indicators
 def calculate_indicators(df):
     if len(df) < 20:
@@ -26,10 +23,10 @@ def calculate_indicators(df):
     
     # Relative Strength Index (RSI)
     delta = df['Close'].diff().fillna(0)  # Replace NaNs with 0 to avoid rolling issues
-    gain = np.where(delta > 0, delta, 0)  # Positive differences (gains)
-    loss = np.where(delta < 0, -delta, 0)  # Negative differences (losses)
+    gain = np.where(delta > 0, delta, 0).flatten()  # Flatten to ensure 1D array
+    loss = np.where(delta < 0, -delta, 0).flatten()  # Flatten to ensure 1D array
 
-    # Ensure 1D arrays and convert to Pandas Series
+    # Convert to Pandas Series with index matching the DataFrame
     gain = pd.Series(gain, index=df.index)
     loss = pd.Series(loss, index=df.index)
 
@@ -57,7 +54,8 @@ def calculate_indicators(df):
     df.dropna(inplace=True)
     return df
 
-# Add features to the data
+# Fetch historical data for stock and add technical indicators
+data = fetch_stock_data('AAPL', '2015-01-01', '2023-01-01')
 data = calculate_indicators(data)
 
 # Step 3: Train-Test Split and Model Training
@@ -133,5 +131,3 @@ def run_dashboard():
 
 if __name__ == "__main__":
     run_dashboard()
-
-
